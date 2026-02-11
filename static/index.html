@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLU BS-CS Curriculum Checker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+        
+            <div class="header-content">
+                <h1>SLU BS-CS Curriculum Checker</h1>
+                <p class="subtitle">Is this course available for you?</p>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab="planner">Course Planner</button>
+            <button class="tab-button" data-tab="courses">All Courses</button>
+            <button class="tab-button" data-tab="path">Prerequisite Path</button>
+        </div>
+
+        <!-- Course Planner Tab -->
+        <div id="planner" class="tab-content active">
+            <div class="section">
+                <h2>My Completed Courses</h2>
+                <div id="completed-courses" class="course-tracker">
+                    <p class="info-text">Select courses you have completed below</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Courses You Can Take</h2>
+                <div id="eligible-courses" class="course-grid">
+                    <p class="info-text">Courses for which you meet all prerequisites will appear here</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Locked Courses</h2>
+                <div id="locked-courses" class="course-grid">
+                    <p class="info-text">Courses requiring additional prerequisites will appear here</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- All Courses Tab -->
+        <div id="courses" class="tab-content">
+            <div class="section">
+                <h2>All Available Courses</h2>
+                <div id="all-courses-list" class="course-list"></div>
+            </div>
+        </div>
+
+        <!-- Prerequisite Path Tab -->
+        <div id="path" class="tab-content">
+            <div class="section">
+                <h2>View Prerequisite Path</h2>
+                <p class="info-text">See all courses in the prerequisite chain for a specific course</p>
+                <div class="form-group">
+                    <label for="path-course">Course:</label>
+                    <input type="text" id="path-course" placeholder="e.g., cs313">
+                </div>
+                <button id="path-btn" class="btn-primary">Get Prerequisite Path</button>
+                <div id="path-result" class="result-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
