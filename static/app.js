@@ -189,32 +189,36 @@ function categorizeCoursesForPlanner() {
     eligibleContainer.innerHTML = '';
     lockedContainer.innerHTML = '';
 
-    // Logic for Standing (Matches courses.pl)
-        const hasSecondYearStanding = completedCourses.includes('cs121') && completedCourses.includes('cs122') && completedCourses.includes('cs123') && completedCourses.includes('gself') && completedCourses.includes('gpcom') && completedCourses.includes('genvi') && completedCourses.includes('fitcs') && completedCourses.includes('cfe102');
-    const hasThirdYearStanding = hasSecondYearStanding && completedCourses.includes('cs211') && completedCourses.includes('cs212');
-    const hasFourthYearStanding = hasThirdYearStanding && completedCourses.includes('cs313') && completedCourses.includes('cs312');
-    const completedElectives = completedCourses.filter(c => c.startsWith('cse')).length;
-
     const coursesToCheck = allCourses.filter(course => !completedCourses.includes(course.course));
 
-    coursesToCheck.forEach(course => {
-        const isElective = course.course.startsWith('cse');
-        let missingPrereqs = course.prerequisites.filter(p => {
-            if (p === 'second_year_standing') return !hasSecondYearStanding;
-            if (p === 'third_year_standing') return !hasThirdYearStanding;
-            if (p === 'fourth_year_standing') return !hasFourthYearStanding;
-            return !completedCourses.includes(p);
-        });
+    coursesToCheck.forEach(async course => {
+        try {
+            const response = await fetch(`${API_BASE}/check`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    course: course.course,
+                    finished: completedCourses
+                })
+            });
 
-        if (isElective && completedElectives >= 4) {
-            missingPrereqs.push('max_electives');
-        }
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
-        if (missingPrereqs.length === 0) {
-            const card = createCourseCard(course, 'eligible');
-            eligibleContainer.appendChild(card);
-        } else {
-            const card = createCourseCard({ ...course, missing: missingPrereqs }, 'locked');
+            const result = await response.json();
+
+            if (result.eligible) {
+                const card = createCourseCard(course, 'eligible');
+                eligibleContainer.appendChild(card);
+            } else {
+                const card = createCourseCard({ ...course, missing: result.missing }, 'locked');
+                lockedContainer.appendChild(card);
+            }
+        } catch (error) {
+            console.error('Error checking eligibility:', error);
+            // Optionally, show an error state for this card
+            const card = createCourseCard({ ...course, missing: ['check_failed'] }, 'locked');
             lockedContainer.appendChild(card);
         }
     });
