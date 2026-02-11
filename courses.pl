@@ -72,6 +72,34 @@ course(cse23, 'Computer Graphics', 3).
 course(cse24, 'Game Design and Development', 3).
 course(cse25, 'UX Design and Concepts', 3).
 
+% --- GENERAL EDUCATION SUBJECTS ---
+course(gmath, 'Mathematics in the Modern World', 3).
+course(gart, 'Art Appreciation', 3).
+course(ghist, 'Readings in Philippine History', 3).
+course(fithw, 'Fitness (Health and Wellness)', 2).
+course(cfe101, 'God''s Journey with His People', 3).
+course(gself, 'Understanding the Self', 3).
+course(gpcom, 'Purposive Communication', 3).
+course(genvi, 'Environmental Science', 3).
+course(fitcs, 'Fitness (Combative Sports)', 2).
+course(cfe102, 'Christian Morality in Our Times', 3).
+course(gsts, 'Science, Technology, and Society', 3).
+course(grva, 'Reading Visual Art', 3).
+course(nstpcwts1, 'Foundations of Service', 3).
+course(fitoa, 'Physical Activity Towards Health and Fitness (Outdoor and Adventure)', 2).
+course(cfe103, 'Catholic Foundation of Mission', 3).
+course(grizal, 'The Life and Works of Rizal', 3).
+course(gentrep, 'The Entrepreneurial Mind', 3).
+course(gethics, 'Ethics', 3).
+course(gcworld, 'The Contemporary World', 3).
+course(nstpcwts2, 'Social Awareness and Empowerment for Service', 3).
+course(fitaq, 'Physical Activity Towards Health and Fitness (Aquatics)', 2).
+course(cfe104, 'CICM Missionary Identity', 3).
+course(cfe105a, 'CICM in Action: Justice, Peace, and Integrity of Creation, Indigenous Peoples, and Interreligious Dialogue', 1.5).
+course(cfe105b, 'CICM in Action:Environmental Planning and Management and Disaster Risk Reduction Management', 1.5).
+course(cfe106a, 'Embracing the CICM Mission 1', 1.5).
+course(cfe106b, 'Embracing the CICM Mission 2', 1.5).
+
 % --- PREREQUISITE RULES ---
 % =====================================================================
 
@@ -100,7 +128,9 @@ prereq(cs231, cs212).
 prereq(cs221, cs211).
 prereq(cs222, cs122).
 prereq(cs223, cs112). prereq(cs223, cs132).
+
 prereq(cfe104, cfe103).
+prereq(nstpcwts2, nstpcwts1).
 
 % 3rd Year Prereqs
 prereq(cs311, third_year_standing).
@@ -114,18 +144,21 @@ prereq(cs322, third_year_standing).
 prereq(cs323, third_year_standing).
 prereq(cs324, third_year_standing).
 prereq(cs325, third_year_standing).
-prereq(cs331, third_year_standing).
+
+% to get practicum must be 4th yr standing
+prereq(cs331, fourth_year_standing).
 
 prereq(cs311, cs122).
 prereq(cs312, cs211).
 prereq(cs313, cs131). prereq(cs313, cs231).
-prereq(cs314, cs111). % and GSELF
-prereq(cs315, cs111). % and GPCOM
+prereq(cs314, cs111). prereq(cs314, gself).
+prereq(cs315, cs111). prereq(cs315, gpcom).
 prereq(csm316, cs132).
 prereq(cs321, cs132). prereq(cs321, cs211).
 prereq(cs322, cs221).
 prereq(cs323, cs132). prereq(cs323, cs211).
 prereq(cs325, cs211).
+prereq(cfe105a, cfe104). prereq(cfe105a, cfe103).
 prereq(cfe105b, cfe105a).
 
 % 4th Year Prereqs
@@ -181,6 +214,11 @@ has_second_year_standing(Finished) :-
     member(cs121, Finished),
     member(cs122, Finished),
     member(cs123, Finished),
+    member(gself, Finished),
+    member(gpcom, Finished),
+    member(genvi, Finished),
+    member(fitcs, Finished),
+    member(cfe102, Finished),
     member(cself, Finished),
     member(gpcom, Finished),
     member(genvi, Finished),

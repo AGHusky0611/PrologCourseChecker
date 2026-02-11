@@ -190,7 +190,7 @@ function categorizeCoursesForPlanner() {
     lockedContainer.innerHTML = '';
 
     // Logic for Standing (Matches courses.pl)
-    const hasSecondYearStanding = completedCourses.includes('cs121') && completedCourses.includes('cs122') && completedCourses.includes('cs123') && completedCourses.includes('cself') && completedCourses.includes('gpcom') && completedCourses.includes('genvi') && completedCourses.includes('fitcs') && completedCourses.includes('cfe102');
+        const hasSecondYearStanding = completedCourses.includes('cs121') && completedCourses.includes('cs122') && completedCourses.includes('cs123') && completedCourses.includes('gself') && completedCourses.includes('gpcom') && completedCourses.includes('genvi') && completedCourses.includes('fitcs') && completedCourses.includes('cfe102');
     const hasThirdYearStanding = hasSecondYearStanding && completedCourses.includes('cs211') && completedCourses.includes('cs212');
     const hasFourthYearStanding = hasThirdYearStanding && completedCourses.includes('cs313') && completedCourses.includes('cs312');
     const completedElectives = completedCourses.filter(c => c.startsWith('cse')).length;
