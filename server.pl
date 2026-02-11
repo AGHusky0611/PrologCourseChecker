@@ -8,7 +8,7 @@
 
 % --- SERVER SETUP ---
 start_server(Port) :-
-    http_server(http_dispatch, [port(Port)]).
+    http_server(http_dispatch, [port(Port), ip(0,0,0,0)]).
 
 :- set_setting(http:cors, [*]).
 
@@ -37,9 +37,10 @@ find_prerequisite_path(Request) :-
     http_read_json_dict(Request, Payload),
     atom_string(Course, Payload.course),
     
-    ( findall(P, find_all_prereqs(Course, P), Path) ->
+    ( findall(P, find_all_prereqs(Course, P), RawPath) ->
+        list_to_set(RawPath, Path), % Removes duplicates
         reply_json(json{path: Path})
-    ; % Handle cases where the course might not exist or has no prereqs
+    ; 
         reply_json(json{path: []})
     ).
 
@@ -65,5 +66,6 @@ find_all_prereqs(Course, Prereq) :-
 
 % --- MAIN ---
 start :-
-    start_server(8080),
-    write('Server running at http://localhost:8080/'), nl.
+    (getenv('PORT', PortStr) -> atom_number(PortStr, Port) ; Port = 8080),
+    start_server(Port),
+    format('Server running on port ~w~n', [Port]).
