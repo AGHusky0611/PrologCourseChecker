@@ -8,7 +8,10 @@
 
 % --- SERVER SETUP ---
 start_server(Port) :-
-    http_server(http_dispatch, [port(Port), ip(0,0,0,0)]).
+    http_server(http_dispatch, [
+        port(Port),
+        bind_address('0.0.0.0') 
+    ]).
 
 :- set_setting(http:cors, [*]).
 
@@ -66,6 +69,11 @@ find_all_prereqs(Course, Prereq) :-
 
 % --- MAIN ---
 start :-
+    % Railway provides the port via the PORT environment variable
     (getenv('PORT', PortStr) -> atom_number(PortStr, Port) ; Port = 8080),
     start_server(Port),
-    format('Server running on port ~w~n', [Port]).
+    format('~n------------------------------------~n'),
+    format('Prolog Server Live on Port: ~w~n', [Port]),
+    format('------------------------------------~n'),
+    % This keeps the main thread alive so the container doesn't exit
+    thread_get_message(_).
