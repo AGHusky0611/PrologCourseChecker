@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
 });
 
-// Tab functionality
+// Tabs function
 function initializeTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -35,7 +35,7 @@ function setupEventListeners() {
     document.getElementById('path-btn').addEventListener('click', getPrerequisitePath);
 }
 
-// Load all courses from API
+
 async function loadCourses() {
     try {
         const response = await fetch(`${API_BASE}/courses`);
@@ -57,7 +57,7 @@ async function loadCourses() {
     }
 }
 
-// Load all elective courses from API
+
 async function loadElectives() {
     try {
         const response = await fetch(`${API_BASE}/electives`);
@@ -160,10 +160,9 @@ function renderCompletedCourses() {
 
         const button = document.createElement('button');
         button.className = 'remove-btn';
-        button.innerHTML = '&times;'; // The 'x' character
+        button.innerHTML = '&times;'; 
         button.title = `Remove ${courseCode}`;
         
-        // Add the event listener programmatically instead of using an inline onclick attribute
         button.addEventListener('click', () => removeCourse(courseCode));
 
         tag.appendChild(span);

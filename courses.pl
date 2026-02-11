@@ -171,9 +171,8 @@ prereq(cse25, cs213).
 
 % A student can enroll if ALL prerequisites are in their FinishedList.
 is_eligible(Course, FinishedList) :-
-    % Find all prerequisites for the course
     findall(P, prereq(Course, P), Prerequisites),
-    % Check if every prerequisite is in the FinishedList
+    % compare if every prerequisite is in the FinishedList
     subset(Prerequisites, FinishedList).
 
 % Helper to find what is missing
