@@ -19,6 +19,7 @@ start_server(Port) :-
 :- http_handler('/api/courses', get_all_courses, []).
 :- http_handler('/api/path', find_prerequisite_path, []).
 :- http_handler('/api/check', check_eligibility_handler, []).
+:- http_handler('/api/batch_check', batch_check_eligibility, []).
 :- http_handler(root(.), http_reply_from_files('static', []), [prefix]).
 
 % --- ROUTE HANDLERS ---
@@ -64,6 +65,29 @@ check_eligibility_handler(Request) :-
         what_is_missing(Course, Finished, Missing),
         reply_json(json{eligible: false, missing: Missing})
     ).
+
+% POST /api/batch_check
+batch_check_eligibility(Request) :-
+    http_read_json_dict(Request, Payload),
+    maplist(atom_string, Finished, Payload.finished),
+    maplist(atom_string, ToCheck, Payload.courses),
+    findall(
+        json{course: C, eligible: Eligible, missing: Missing},
+        (
+            member(C, ToCheck),
+            ( is_eligible(C, Finished) ->
+                Eligible = true, Missing = []
+            ;
+                Eligible = false,
+                what_is_missing(C, Finished, Missing)
+            )
+        ),
+        Results
+    ),
+    reply_json(json{results: Results}).
+
+% Add handler registration:
+:- http_handler('/api/batch_check', batch_check_eligibility, []).
 
 % --- HELPER PREDICATES ---
 

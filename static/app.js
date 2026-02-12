@@ -181,50 +181,40 @@ function removeCourse(courseCode) {
 }
 
 // Categorize courses into eligible and locked
-function categorizeCoursesForPlanner() {
+async function categorizeCoursesForPlanner() {
     const eligibleContainer = document.getElementById('eligible-courses');
     const lockedContainer = document.getElementById('locked-courses');
-
     eligibleContainer.innerHTML = '';
     lockedContainer.innerHTML = '';
 
     const coursesToCheck = allCourses.filter(course => !completedCourses.includes(course.course));
+    const courseCodes = coursesToCheck.map(course => course.course);
 
-    // Use Promise.all to ensure all eligibility checks complete before rendering
-    Promise.all(
-        coursesToCheck.map(async course => {
-            try {
-                const response = await fetch(`${API_BASE}/check`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        course: course.course,
-                        finished: completedCourses
-                    })
-                });
+    if (courseCodes.length === 0) return;
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                return { course, eligible: result.eligible, missing: result.missing };
-            } catch (error) {
-                console.error('Error checking eligibility:', error);
-                return { course, eligible: false, missing: ['check_failed'] };
-            }
-        })
-    ).then(results => {
-        results.forEach(({ course, eligible, missing }) => {
-            if (eligible) {
+    try {
+        const response = await fetch(`${API_BASE}/batch_check`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                courses: courseCodes,
+                finished: completedCourses
+            })
+        });
+        const data = await response.json();
+        data.results.forEach(result => {
+            const course = allCourses.find(c => c.course === result.course);
+            if (result.eligible) {
                 const card = createCourseCard(course, 'eligible');
                 eligibleContainer.appendChild(card);
             } else {
-                const card = createCourseCard({ ...course, missing }, 'locked');
+                const card = createCourseCard({ ...course, missing: result.missing }, 'locked');
                 lockedContainer.appendChild(card);
             }
         });
-    });
+    } catch (error) {
+        console.error('Error in batch eligibility check:', error);
+    }
 }
 
 // Create a course card element
