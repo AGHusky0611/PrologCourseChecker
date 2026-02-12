@@ -190,36 +190,40 @@ function categorizeCoursesForPlanner() {
 
     const coursesToCheck = allCourses.filter(course => !completedCourses.includes(course.course));
 
-    coursesToCheck.forEach(async course => {
-        try {
-            const response = await fetch(`${API_BASE}/check`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    course: course.course,
-                    finished: completedCourses
-                })
-            });
+    // Use Promise.all to ensure all eligibility checks complete before rendering
+    Promise.all(
+        coursesToCheck.map(async course => {
+            try {
+                const response = await fetch(`${API_BASE}/check`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        course: course.course,
+                        finished: completedCourses
+                    })
+                });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                return { course, eligible: result.eligible, missing: result.missing };
+            } catch (error) {
+                console.error('Error checking eligibility:', error);
+                return { course, eligible: false, missing: ['check_failed'] };
             }
-
-            const result = await response.json();
-
-            if (result.eligible) {
+        })
+    ).then(results => {
+        results.forEach(({ course, eligible, missing }) => {
+            if (eligible) {
                 const card = createCourseCard(course, 'eligible');
                 eligibleContainer.appendChild(card);
             } else {
-                const card = createCourseCard({ ...course, missing: result.missing }, 'locked');
+                const card = createCourseCard({ ...course, missing }, 'locked');
                 lockedContainer.appendChild(card);
             }
-        } catch (error) {
-            console.error('Error checking eligibility:', error);
-            // Optionally, show an error state for this card
-            const card = createCourseCard({ ...course, missing: ['check_failed'] }, 'locked');
-            lockedContainer.appendChild(card);
-        }
+        });
     });
 }
 

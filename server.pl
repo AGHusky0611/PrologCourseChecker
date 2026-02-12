@@ -51,7 +51,9 @@ find_prerequisite_path(Request) :-
 check_eligibility_handler(Request) :-
     http_read_json_dict(Request, Payload),
     atom_string(Course, Payload.course),
-    Finished = Payload.finished,
+    
+    % Convert the list of strings (Payload.finished) into a list of atoms (Finished)
+    maplist(atom_string, Finished, Payload.finished),
 
     ( is_eligible(Course, Finished) ->
         reply_json(json{eligible: true})

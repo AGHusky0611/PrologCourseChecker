@@ -100,6 +100,56 @@ course(cfe105b, 'CICM in Action:Environmental Planning and Management and Disast
 course(cfe106a, 'Embracing the CICM Mission 1', 1.5).
 course(cfe106b, 'Embracing the CICM Mission 2', 1.5).
 
+% --- STANDING LOGIC ---
+
+% --- YEAR STANDING PREDICATES ---
+% True if all first year courses are completed
+has_second_year_standing(Finished) :-
+    member(cs111, Finished),
+    member(cs112, Finished),
+    member(cs113, Finished),
+    member(cs121, Finished),
+    member(cs122, Finished),
+    member(cs123, Finished),
+    member(cs131, Finished),
+    member(cs132, Finished).
+
+% True if all second year courses are completed (including first year)
+has_third_year_standing(Finished) :-
+    has_second_year_standing(Finished),
+    member(cs211, Finished),
+    member(cs212, Finished),
+    member(cs213, Finished),
+    member(cs221, Finished),
+    member(cs222, Finished),
+    member(cs223, Finished),
+    member(cs231, Finished).
+
+% Export predicates for HTTP server (SWI-Prolog)
+:- multifile has_second_year_standing/1.
+:- multifile has_third_year_standing/1.
+:- public has_second_year_standing/1.
+:- public has_third_year_standing/1.
+
+% --- STANDING AS PREREQUISITES ---
+prereq(second_year_standing, _).
+prereq(third_year_standing, _).
+
+% Example: Add standing as prerequisite for 3rd year courses
+prereq(cs311, second_year_standing).
+prereq(cs312, second_year_standing).
+prereq(cs313, second_year_standing).
+prereq(cs314, second_year_standing).
+prereq(cs315, second_year_standing).
+prereq(csm316, second_year_standing).
+
+prereq(cs321, third_year_standing).
+prereq(cs322, third_year_standing).
+prereq(cs323, third_year_standing).
+prereq(cs324, third_year_standing).
+prereq(cs325, third_year_standing).
+prereq(cs331, third_year_standing).
+
 % --- PREREQUISITE RULES ---
 % =====================================================================
 
@@ -169,12 +219,27 @@ prereq(cse23, csm316).
 prereq(cse24, cs311).
 prereq(cse25, cs213).
 
-% A student can enroll if ALL prerequisites are in their FinishedList.
-is_eligible(Course, FinishedList) :-
-    findall(P, prereq(Course, P), Prerequisites),
-    % compare if every prerequisite is in the FinishedList
-    subset(Prerequisites, FinishedList).
+% --- ELIGIBILITY LOGIC ---
+is_eligible(Course, Finished) :-
+    findall(P, prereq(Course, P), Prereqs),
+    check_prereqs(Prereqs, Finished).
 
-% Helper to find what is missing
+check_prereqs([], _).
+check_prereqs([second_year_standing|Rest], Finished) :-
+    has_second_year_standing(Finished),
+    check_prereqs(Rest, Finished).
+check_prereqs([third_year_standing|Rest], Finished) :-
+    has_third_year_standing(Finished),
+    check_prereqs(Rest, Finished).
+check_prereqs([P|Rest], Finished) :-
+    P \= second_year_standing,
+    P \= third_year_standing,
+    member(P, Finished),
+    check_prereqs(Rest, Finished).
+
 what_is_missing(Course, Finished, Missing) :-
-    findall(P, (prereq(Course, P), \+ member(P, Finished)), Missing).
+    findall(P, (prereq(Course, P), \+ check_prereq(P, Finished)), Missing).
+
+check_prereq(second_year_standing, Finished) :- has_second_year_standing(Finished).
+check_prereq(third_year_standing, Finished) :- has_third_year_standing(Finished).
+check_prereq(P, Finished) :- P \= second_year_standing, P \= third_year_standing, member(P, Finished).
