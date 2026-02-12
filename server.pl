@@ -39,12 +39,15 @@ get_all_courses(_Request) :-
 find_prerequisite_path(Request) :-
     http_read_json_dict(Request, Payload),
     atom_string(Course, Payload.course),
-    
-    ( findall(P, find_all_prereqs(Course, P), RawPath) ->
-        list_to_set(RawPath, Path), % Removes duplicates
-        reply_json(json{path: Path})
-    ; 
-        reply_json(json{path: []})
+    ( course(Course, _, _) ->
+        ( findall(P, find_all_prereqs(Course, P), RawPath) ->
+            list_to_set(RawPath, Path),
+            reply_json(json{path: Path})
+        ;
+            reply_json(json{path: []})
+        )
+    ;
+        reply_json(json{error: "Course not found", path: []})
     ).
 
 % POST /api/check
