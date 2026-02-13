@@ -41,7 +41,7 @@ find_prerequisite_path(Request) :-
     http_read_json_dict(Request, Payload),
     atom_string(Course, Payload.course),
     ( course(Course, _, _) ->
-        ( prerequisite_path(Course, Path) ->
+        ( prerequisite_path_list(Course, Path) ->
             reply_json(json{path: Path})
         ;
             reply_json(json{path: []})
@@ -83,23 +83,27 @@ batch_check_eligibility(Request) :-
     ),
     reply_json(json{results: Results}).
 
-% Add handler registration:
-:- http_handler('/api/batch_check', batch_check_eligibility, []).
-
 % --- HELPER PREDICATES ---
 
-% Recursively find all prerequisites for a course
-find_all_prereqs(Course, Prereq) :-
-    prereq(Course, P),
-    ( Prereq = P ; find_all_prereqs(P, Prereq) ).
+% Logic to find the full prerequisite path chain
+prerequisite_path_list(Course, Path) :-
+    find_path_recursive(Course, [], ReversedPath),
+    reverse(ReversedPath, FullPath),
+    % Ensure the requested course is at the end of the chain
+    (last(FullPath, Course) -> Path = FullPath ; append(FullPath, [Course], Path)).
+
+find_path_recursive(Course, Acc, Path) :-
+    ( prereq(Course, P), \+ member(P, Acc) ->
+        find_path_recursive(P, [P|Acc], Path)
+    ;
+        Path = Acc
+    ).
 
 % --- MAIN ---
 start :-
-    % Railway provides the port via the PORT environment variable
     (getenv('PORT', PortStr) -> atom_number(PortStr, Port) ; Port = 8080),
     start_server(Port),
     format('~n------------------------------------~n'),
     format('Prolog Server Live on Port: ~w~n', [Port]),
     format('------------------------------------~n'),
-    % This keeps the main thread alive so the container doesn't exit
     thread_get_message(_).
