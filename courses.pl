@@ -236,53 +236,12 @@ prereq(cse23, csm316).
 prereq(cse24, cs311).
 prereq(cse25, cs213).
 
-% --- ELIGIBILITY LOGIC ---
-is_eligible(Course, Finished) :-
-    findall(P, prereq(Course, P), Prereqs),
-    check_prereqs(Prereqs, Finished).
+% A student can enroll if ALL prerequisites are in their FinishedList.
+is_eligible(Course, FinishedList) :-
+    findall(P, prereq(Course, P), Prerequisites),
+    % compare if every prerequisite is in the FinishedList
+    subset(Prerequisites, FinishedList).
 
-check_prereqs([], _).
-check_prereqs([second_year_standing|Rest], Finished) :-
-    has_second_year_standing(Finished),
-    check_prereqs(Rest, Finished).
-check_prereqs([third_year_standing|Rest], Finished) :-
-    has_third_year_standing(Finished),
-    check_prereqs(Rest, Finished).
-check_prereqs([fourth_year_standing|Rest], Finished) :-
-    has_fourth_year_standing(Finished),
-    check_prereqs(Rest, Finished).
-check_prereqs([P|Rest], Finished) :-
-    P \= second_year_standing,
-    P \= third_year_standing,
-    P \= fourth_year_standing,
-    member(P, Finished),
-    check_prereqs(Rest, Finished).
-
+% Helper to find what is missing
 what_is_missing(Course, Finished, Missing) :-
-    findall(P, (prereq(Course, P), \+ check_prereq(P, Finished)), Missing).
-
-check_prereq(second_year_standing, Finished) :- has_second_year_standing(Finished).
-check_prereq(third_year_standing, Finished) :- has_third_year_standing(Finished).
-check_prereq(fourth_year_standing, Finished) :- has_fourth_year_standing(Finished).
-check_prereq(P, Finished) :- P \= second_year_standing, P \= third_year_standing, P \= fourth_year_standing, member(P, Finished).
-
-
-% --- CLI Commands ---
-% prerequisite_path(Course, Path) - recursively collects all prerequisites for a course
-prerequisite_path(Course, Path) :-
-    prerequisite_path(Course, [], Path).
-
-prerequisite_path(Course, Acc, Path) :-
-    findall(P, prereq(Course, P), Prereqs),
-    prerequisite_path_list(Prereqs, [Course|Acc], Path).
-
-prerequisite_path_list([], Acc, Path) :-
-    reverse(Acc, Path).
-prerequisite_path_list([P|Rest], Acc, Path) :-
-    prerequisite_path(P, Acc, NewAcc),
-    prerequisite_path_list(Rest, NewAcc, Path).
-
-% is_eligible(Course, Finished) - checks if a course is eligible based on finished courses
-% what_is_missing(Course, Finished, Missing) - lists missing prerequisites for a course
-% course(Code, Name, Units) - lists all courses with their details
-% prereq(Course, Prereq) - lists all prerequisites for a course
+    findall(P, (prereq(Course, P), \+ member(P, Finished)), Missing).

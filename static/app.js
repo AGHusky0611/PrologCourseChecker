@@ -190,32 +190,36 @@ async function categorizeCoursesForPlanner() {
     const coursesToCheck = allCourses.filter(course => !completedCourses.includes(course.course));
     const courseCodes = coursesToCheck.map(course => course.course);
 
-    if (courseCodes.length === 0) return;
+    coursesToCheck.forEach(async course => {
+        try {
+            const response = await fetch(`${API_BASE}/check`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    course: course.course,
+                    finished: completedCourses
+                })
+            });
 
-    try {
-        const response = await fetch(`${API_BASE}/batch_check`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                courses: courseCodes,
-                finished: completedCourses
-            })
-        });
-        const data = await response.json();
-        data.results.forEach(result => {
-            const course = allCourses.find(c => c.course === result.course);
-            if (result.eligible) {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+           if (result.eligible) {
                 const card = createCourseCard(course, 'eligible');
                 eligibleContainer.appendChild(card);
             } else {
                 const card = createCourseCard({ ...course, missing: result.missing }, 'locked');
                 lockedContainer.appendChild(card);
             }
-        });
-    } catch (error) {
-        console.error('Error in batch eligibility check:', error);
-    }
-}
+        } catch (error) {
+            console.error('Error checking eligibility:', error);
+            // Optionally, show an error state for this card
+            const card = createCourseCard({ ...course, missing: ['check_failed'] }, 'locked');
+            lockedContainer.appendChild(card);
+        }
+    });}
 
 // Create a course card element
 function createCourseCard(course, type) {
