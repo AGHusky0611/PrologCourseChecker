@@ -102,7 +102,6 @@ course(cfe106b, 'Embracing the CICM Mission 2', 1.5).
 
 % --- STANDING LOGIC ---
 
-% --- YEAR STANDING PREDICATES ---
 % True if all first year courses are completed
 has_second_year_standing(Finished) :-
     member(cs111, Finished),
@@ -135,7 +134,6 @@ has_third_year_standing(Finished) :-
 prereq(second_year_standing, _).
 prereq(third_year_standing, _).
 
-% Example: Add standing as prerequisite for 3rd year courses
 prereq(cs311, second_year_standing).
 prereq(cs312, second_year_standing).
 prereq(cs313, second_year_standing).
@@ -243,3 +241,10 @@ what_is_missing(Course, Finished, Missing) :-
 check_prereq(second_year_standing, Finished) :- has_second_year_standing(Finished).
 check_prereq(third_year_standing, Finished) :- has_third_year_standing(Finished).
 check_prereq(P, Finished) :- P \= second_year_standing, P \= third_year_standing, member(P, Finished).
+
+
+% --- CLI Commands ---
+% is_eligible(Course, Finished) - checks if a course is eligible based on finished courses
+% what_is_missing(Course, Finished, Missing) - lists missing prerequisites for a course
+% course(Code, Name, Units) - lists all courses with their details
+% prereq(Course, Prereq) - lists all prerequisites for a course
