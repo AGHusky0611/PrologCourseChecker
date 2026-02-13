@@ -124,15 +124,34 @@ has_third_year_standing(Finished) :-
     member(cs223, Finished),
     member(cs231, Finished).
 
+% True if all third year courses are completed (including previous years)
+has_fourth_year_standing(Finished) :-
+    has_third_year_standing(Finished),
+    member(cs311, Finished),
+    member(cs312, Finished),
+    member(cs313, Finished),
+    member(cs314, Finished),
+    member(cs315, Finished),
+    member(csm316, Finished),
+    member(cs321, Finished),
+    member(cs322, Finished),
+    member(cs323, Finished),
+    member(cs324, Finished),
+    member(cs325, Finished),
+    member(cs331, Finished).
+
 % Export predicates for HTTP server (SWI-Prolog)
 :- multifile has_second_year_standing/1.
 :- multifile has_third_year_standing/1.
+:- multifile has_fourth_year_standing/1.
 :- public has_second_year_standing/1.
 :- public has_third_year_standing/1.
+:- public has_fourth_year_standing/1.
 
 % --- STANDING AS PREREQUISITES ---
 prereq(second_year_standing, _).
 prereq(third_year_standing, _).
+prereq(fourth_year_standing, _).
 
 prereq(cs311, second_year_standing).
 prereq(cs312, second_year_standing).
@@ -229,9 +248,13 @@ check_prereqs([second_year_standing|Rest], Finished) :-
 check_prereqs([third_year_standing|Rest], Finished) :-
     has_third_year_standing(Finished),
     check_prereqs(Rest, Finished).
+check_prereqs([fourth_year_standing|Rest], Finished) :-
+    has_fourth_year_standing(Finished),
+    check_prereqs(Rest, Finished).
 check_prereqs([P|Rest], Finished) :-
     P \= second_year_standing,
     P \= third_year_standing,
+    P \= fourth_year_standing,
     member(P, Finished),
     check_prereqs(Rest, Finished).
 
@@ -240,10 +263,24 @@ what_is_missing(Course, Finished, Missing) :-
 
 check_prereq(second_year_standing, Finished) :- has_second_year_standing(Finished).
 check_prereq(third_year_standing, Finished) :- has_third_year_standing(Finished).
-check_prereq(P, Finished) :- P \= second_year_standing, P \= third_year_standing, member(P, Finished).
+check_prereq(fourth_year_standing, Finished) :- has_fourth_year_standing(Finished).
+check_prereq(P, Finished) :- P \= second_year_standing, P \= third_year_standing, P \= fourth_year_standing, member(P, Finished).
 
 
 % --- CLI Commands ---
+% prerequisite_path(Course, Path) - recursively collects all prerequisites for a course
+prerequisite_path(Course, Path) :-
+    prerequisite_path(Course, [], Path).
+
+prerequisite_path(Course, Acc, Path) :-
+    findall(P, prereq(Course, P), Prereqs),
+    prerequisite_path_list(Prereqs, [Course|Acc], Path).
+
+prerequisite_path_list([], Acc, Path) :-
+    reverse(Acc, Path).
+prerequisite_path_list([P|Rest], Acc, Path) :-
+    prerequisite_path(P, Acc, NewAcc),
+    prerequisite_path_list(Rest, NewAcc, Path).
 % is_eligible(Course, Finished) - checks if a course is eligible based on finished courses
 % what_is_missing(Course, Finished, Missing) - lists missing prerequisites for a course
 % course(Code, Name, Units) - lists all courses with their details
