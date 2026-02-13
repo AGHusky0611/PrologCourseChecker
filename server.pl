@@ -41,8 +41,7 @@ find_prerequisite_path(Request) :-
     http_read_json_dict(Request, Payload),
     atom_string(Course, Payload.course),
     ( course(Course, _, _) ->
-        ( findall(P, find_all_prereqs(Course, P), RawPath) ->
-            list_to_set(RawPath, Path),
+        ( prerequisite_path(Course, Path) ->
             reply_json(json{path: Path})
         ;
             reply_json(json{path: []})

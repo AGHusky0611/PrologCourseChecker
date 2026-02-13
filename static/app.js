@@ -252,33 +252,36 @@ async function getPrerequisitePath() {
     const resultBox = document.getElementById('path-result');
 
     if (!course) {
-        showResult(resultBox, 'error', 'Please enter a course code.');
+        showResult(resultBox, 'info', 'Please enter a course code.');
         return;
     }
 
     try {
-        const response = await fetch(`${API_BASE}/path`, {
+        const response = await fetch('/api/path', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ course })
         });
         const data = await response.json();
 
-        let message = `<h3>Prerequisite Path for ${course.toUpperCase()}</h3>`;
-        if (data.path.length > 0) {
-            message += '<p>All courses in the prerequisite chain:</p><div>';
-            data.path.forEach(p => {
-                message += `<span class="path-item">${p.toUpperCase()}</span>`;
-            });
-            message += '</div>';
-            showResult(resultBox, 'info', message);
-        } else {
-            message += '<p>No prerequisites found for this course.</p>';
-            showResult(resultBox, 'info', message);
+        if (data.error) {
+            showResult(resultBox, 'error', 'Course not found.');
+            return;
         }
+
+        if (!data.path || data.path.length === 0) {
+            showResult(resultBox, 'info', 'No prerequisite path found for this course.');
+            return;
+        }
+
+        // Render path visually as tags
+        const pathHtml = data.path.map(code =>
+            `<span class="path-item">${code.toUpperCase()}</span>`
+        ).join(' &rarr; ');
+
+        showResult(resultBox, 'success', `<strong>Prerequisite Path:</strong><br>${pathHtml}`);
     } catch (error) {
-        console.error('Error getting prerequisite path:', error);
-        showResult(resultBox, 'error', 'Failed to get prerequisite path. Make sure the server is running.');
+        showResult(resultBox, 'error', 'Failed to fetch prerequisite path. Is the server running?');
     }
 }
 

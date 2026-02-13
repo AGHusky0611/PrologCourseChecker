@@ -281,6 +281,7 @@ prerequisite_path_list([], Acc, Path) :-
 prerequisite_path_list([P|Rest], Acc, Path) :-
     prerequisite_path(P, Acc, NewAcc),
     prerequisite_path_list(Rest, NewAcc, Path).
+
 % is_eligible(Course, Finished) - checks if a course is eligible based on finished courses
 % what_is_missing(Course, Finished, Missing) - lists missing prerequisites for a course
 % course(Code, Name, Units) - lists all courses with their details
