@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
 });
 
-// Tabs function
+// Tab functionality
 function initializeTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -35,7 +35,7 @@ function setupEventListeners() {
     document.getElementById('path-btn').addEventListener('click', getPrerequisitePath);
 }
 
-
+// Load all courses from API
 async function loadCourses() {
     try {
         const response = await fetch(`${API_BASE}/courses`);
@@ -57,7 +57,7 @@ async function loadCourses() {
     }
 }
 
-
+// Load all elective courses from API
 async function loadElectives() {
     try {
         const response = await fetch(`${API_BASE}/electives`);
@@ -90,37 +90,7 @@ function renderAllCourses() {
     });
 }
 
-// Render available courses in planner (only courses with NO prerequisites)
-function renderAvailableCourses() {
-    const container = document.getElementById('available-courses');
-    container.innerHTML = '';
 
-    // Only show courses that have no prerequisites
-    const noPrerequsiteCourses = allCourses.filter(course => course.prerequisites.length === 0);
-
-    if (noPrerequsiteCourses.length === 0) {
-        container.innerHTML = '<p class="info-text">No courses found without prerequisites.</p>';
-        return;
-    }
-
-    noPrerequsiteCourses.forEach(course => {
-        const courseCard = document.createElement('div');
-        courseCard.className = 'course-card';
-
-        const isCompleted = completedCourses.includes(course.course);
-        if (isCompleted) {
-            courseCard.classList.add('completed');
-        }
-
-        courseCard.innerHTML = `
-            <div class="course-code">${course.course.toUpperCase()}</div>
-            <div class="course-prereqs">No prerequisites required</div>
-        `;
-
-        courseCard.addEventListener('click', () => toggleCourse(course.course));
-        container.appendChild(courseCard);
-    });
-}
 
 // Toggle course completion
 function toggleCourse(courseCode) {
@@ -160,9 +130,10 @@ function renderCompletedCourses() {
 
         const button = document.createElement('button');
         button.className = 'remove-btn';
-        button.innerHTML = '&times;'; 
+        button.innerHTML = '&times;'; // The 'x' character
         button.title = `Remove ${courseCode}`;
         
+        // Add the event listener programmatically instead of using an inline onclick attribute
         button.addEventListener('click', () => removeCourse(courseCode));
 
         tag.appendChild(span);
@@ -184,42 +155,44 @@ function removeCourse(courseCode) {
 async function categorizeCoursesForPlanner() {
     const eligibleContainer = document.getElementById('eligible-courses');
     const lockedContainer = document.getElementById('locked-courses');
+
     eligibleContainer.innerHTML = '';
     lockedContainer.innerHTML = '';
 
     const coursesToCheck = allCourses.filter(course => !completedCourses.includes(course.course));
-    const courseCodes = coursesToCheck.map(course => course.course);
 
-    coursesToCheck.forEach(async course => {
-        try {
-            const response = await fetch(`${API_BASE}/check`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    course: course.course,
-                    finished: completedCourses
-                })
-            });
+    // Create a list of promises for all the API calls
+    const checkPromises = coursesToCheck.map(course => {
+        return fetch(`${API_BASE}/check`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                course: course.course,
+                finished: completedCourses
+            })
+        }).then(response => response.json());
+    });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+    // Wait for all checks to complete
+    try {
+        const results = await Promise.all(checkPromises);
 
-            const result = await response.json();
-           if (result.eligible) {
+        results.forEach((result, index) => {
+            const course = coursesToCheck[index];
+            if (result.eligible) {
                 const card = createCourseCard(course, 'eligible');
                 eligibleContainer.appendChild(card);
             } else {
-                const card = createCourseCard({ ...course, missing: result.missing }, 'locked');
+                const card = createCourseCard({ ...course, missing: result.missing || [] }, 'locked');
                 lockedContainer.appendChild(card);
             }
-        } catch (error) {
-            console.error('Error checking eligibility:', error);
-            // Optionally, show an error state for this card
-            const card = createCourseCard({ ...course, missing: ['check_failed'] }, 'locked');
-            lockedContainer.appendChild(card);
-        }
-    });}
+        });
+
+    } catch (error) {
+        console.error('Error checking course eligibility:', error);
+        showError('Failed to check course eligibility.');
+    }
+}
 
 // Create a course card element
 function createCourseCard(course, type) {
@@ -256,36 +229,33 @@ async function getPrerequisitePath() {
     const resultBox = document.getElementById('path-result');
 
     if (!course) {
-        showResult(resultBox, 'info', 'Please enter a course code.');
+        showResult(resultBox, 'error', 'Please enter a course code.');
         return;
     }
 
     try {
-        const response = await fetch('/api/path', {
+        const response = await fetch(`${API_BASE}/path`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ course })
         });
         const data = await response.json();
 
-        if (data.error) {
-            showResult(resultBox, 'error', 'Course not found.');
-            return;
+        let message = `<h3>Prerequisite Path for ${course.toUpperCase()}</h3>`;
+        if (data.path.length > 0) {
+            message += '<p>All courses in the prerequisite chain:</p><div>';
+            data.path.forEach(p => {
+                message += `<span class="path-item">${p.toUpperCase()}</span>`;
+            });
+            message += '</div>';
+            showResult(resultBox, 'info', message);
+        } else {
+            message += '<p>No prerequisites found for this course.</p>';
+            showResult(resultBox, 'info', message);
         }
-
-        if (!data.path || data.path.length === 0) {
-            showResult(resultBox, 'info', 'No prerequisite path found for this course.');
-            return;
-        }
-
-        // Render path visually as tags
-        const pathHtml = data.path.map(code =>
-            `<span class="path-item">${code.toUpperCase()}</span>`
-        ).join(' &rarr; ');
-
-        showResult(resultBox, 'success', `<strong>Prerequisite Path:</strong><br>${pathHtml}`);
     } catch (error) {
-        showResult(resultBox, 'error', 'Failed to fetch prerequisite path. Is the server running?');
+        console.error('Error getting prerequisite path:', error);
+        showResult(resultBox, 'error', 'Failed to get prerequisite path. Make sure the server is running.');
     }
 }
 

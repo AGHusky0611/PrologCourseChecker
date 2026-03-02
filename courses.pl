@@ -72,59 +72,28 @@ course(cse23, 'Computer Graphics', 3).
 course(cse24, 'Game Design and Development', 3).
 course(cse25, 'UX Design and Concepts', 3).
 
-% --- GENERAL EDUCATION SUBJECTS ---
-course(gmath, 'Mathematics in the Modern World', 3).
-course(gart, 'Art Appreciation', 3).
-course(ghist, 'Readings in Philippine History', 3).
-course(fithw, 'Fitness (Health and Wellness)', 2).
-course(cfe101, 'God''s Journey with His People', 3).
-course(gself, 'Understanding the Self', 3).
-course(gpcom, 'Purposive Communication', 3).
-course(genvi, 'Environmental Science', 3).
-course(fitcs, 'Fitness (Combative Sports)', 2).
-course(cfe102, 'Christian Morality in Our Times', 3).
-course(gsts, 'Science, Technology, and Society', 3).
-course(grva, 'Reading Visual Art', 3).
-course(nstpcwts1, 'Foundations of Service', 3).
-course(fitoa, 'Physical Activity Towards Health and Fitness (Outdoor and Adventure)', 2).
-course(cfe103, 'Catholic Foundation of Mission', 3).
-course(grizal, 'The Life and Works of Rizal', 3).
-course(gentrep, 'The Entrepreneurial Mind', 3).
-course(gethics, 'Ethics', 3).
-course(gcworld, 'The Contemporary World', 3).
-course(nstpcwts2, 'Social Awareness and Empowerment for Service', 3).
-course(fitaq, 'Physical Activity Towards Health and Fitness (Aquatics)', 2).
-course(cfe104, 'CICM Missionary Identity', 3).
-course(cfe105a, 'CICM in Action: Justice, Peace, and Integrity of Creation, Indigenous Peoples, and Interreligious Dialogue', 1.5).
-course(cfe105b, 'CICM in Action:Environmental Planning and Management and Disaster Risk Reduction Management', 1.5).
-course(cfe106a, 'Embracing the CICM Mission 1', 1.5).
-course(cfe106b, 'Embracing the CICM Mission 2', 1.5).
+% --- PREREQUISITE RULES ---
+% =====================================================================
 
-% --- STANDING LOGIC ---
-
-% Checks if all first year courses are in the Finished list
-meets_second_year_standing(Finished) :-
-    forall(member(C, [cs111, cs112, cs113, cs121, cs122, cs123, cs131, cs132]), member(C, Finished)).
-
-% Checks if all second year courses + first year are in the Finished list
-meets_third_year_standing(Finished) :-
-    meets_second_year_standing(Finished),
-    forall(member(C, [cs211, cs212, cs213, cs221, cs222, cs223, cs231]), member(C, Finished)).
-
-% Checks if all third year courses + previous years are in the Finished list
-meets_fourth_year_standing(Finished) :-
-    meets_third_year_standing(Finished),
-    forall(member(C, [cs311, cs312, cs313, cs314, cs315, csm316, cs321, cs322, cs323, cs324, cs325, cs331]), member(C, Finished)).
-
-% --- PREREQUISITE DEFINITIONS ---
 % First Year 
 prereq(cs131, cs111).
+
 prereq(cs121, cs111).
+
 prereq(cs122, cs112).
+
 prereq(cs123, cs112).
 prereq(cfe102, cfe101).
 
 % 2nd Year Prereqs
+prereq(cs211, second_year_standing).
+prereq(cs212, second_year_standing).
+prereq(cs213, second_year_standing).
+prereq(cs221, second_year_standing).
+prereq(cs222, second_year_standing).
+prereq(cs223, second_year_standing).
+prereq(cs231, second_year_standing).
+
 prereq(cs211, cs112). prereq(cs211, cs113).
 prereq(cs212, cs122).
 prereq(cs231, cs212).
@@ -132,71 +101,106 @@ prereq(cs221, cs211).
 prereq(cs222, cs122).
 prereq(cs223, cs112). prereq(cs223, cs132).
 prereq(cfe104, cfe103).
-prereq(nstpcwts2, nstpcwts1).
 
-% 3rd Year Prereqs (Standing required)
-prereq(cs311, second_year_standing). prereq(cs311, cs122).
-prereq(cs312, second_year_standing). prereq(cs312, cs211).
-prereq(cs313, second_year_standing). prereq(cs313, cs131). prereq(cs313, cs231).
-prereq(cs314, second_year_standing). prereq(cs314, cs111). prereq(cs314, gself).
-prereq(cs315, second_year_standing). prereq(cs315, cs111). prereq(cs315, gpcom).
-prereq(csm316, second_year_standing). prereq(csm316, cs132).
-
-prereq(cs321, third_year_standing). prereq(cs321, cs132). prereq(cs321, cs211).
-prereq(cs322, third_year_standing). prereq(cs322, cs221).
-prereq(cs323, third_year_standing). prereq(cs323, cs132). prereq(cs323, cs211).
+% 3rd Year Prereqs
+prereq(cs311, third_year_standing).
+prereq(cs312, third_year_standing).
+prereq(cs313, third_year_standing).
+prereq(cs314, third_year_standing).
+prereq(cs315, third_year_standing).
+prereq(csm316, third_year_standing).
+prereq(cs321, third_year_standing).
+prereq(cs322, third_year_standing).
+prereq(cs323, third_year_standing).
 prereq(cs324, third_year_standing).
-prereq(cs325, third_year_standing). prereq(cs325, cs211).
-prereq(cs331, third_year_standing). prereq(cs331, cs312). prereq(cs331, cs313).
+prereq(cs325, third_year_standing).
+prereq(cs331, third_year_standing).
 
-prereq(cfe105a, cfe104). prereq(cfe105a, cfe103).
+prereq(cs311, cs122).
+prereq(cs312, cs211).
+prereq(cs313, cs131). prereq(cs313, cs231).
+prereq(cs314, cs111). % and GSELF
+prereq(cs315, cs111). % and GPCOM
+prereq(csm316, cs132).
+prereq(cs321, cs132). prereq(cs321, cs211).
+prereq(cs322, cs221).
+prereq(cs323, cs132). prereq(cs323, cs211).
+prereq(cs325, cs211).
 prereq(cfe105b, cfe105a).
 
 % 4th Year Prereqs
-prereq(cs411, fourth_year_standing). prereq(cs411, cs324).
-prereq(cs412, fourth_year_standing). prereq(cs412, cs231). 
-prereq(cs413, fourth_year_standing). prereq(cs413, cs314). 
-prereq(cs421, fourth_year_standing). prereq(cs421, cs411).
-prereq(cs422, fourth_year_standing). prereq(cs422, cs231). 
+prereq(cs411, fourth_year_standing).
+prereq(cs412, fourth_year_standing).
+prereq(cs413, fourth_year_standing).
+prereq(cs421, fourth_year_standing).
+prereq(cs422, fourth_year_standing).
+
+prereq(cs411, cs324).
+prereq(cs421, cs411).
+prereq(cfe106a, cfe105b).
+prereq(cs331, fourth_year_standing).
+
+% 4th Year Prereqs
+prereq(cs411, cs324).
+prereq(cs411, fourth_year_standing).
+prereq(cs421, cs411).
 prereq(cfe106a, cfe105b).
 prereq(cfe106b, cfe106a).
 
 % Electives
-prereq(cse10, cs123).
-prereq(cse11, cs212).
-prereq(cse12, cs231).
-prereq(cse13, cs221).
-prereq(cse14, cs313).
-prereq(cse15, cs322).
-prereq(cse16, cs211).
-prereq(cse17, csm316).
-prereq(cse18, cs321).
-prereq(cse19, cs223).
-prereq(cse20, cs412).
-prereq(cse21, cs213).
-prereq(cse22, cs311).
-prereq(cse23, csm316).
-prereq(cse24, cs311).
-prereq(cse25, cs213).
+prereq(cse10, third_year_standing).
+prereq(cse11, third_year_standing).
+prereq(cse12, third_year_standing).
+prereq(cse13, third_year_standing).
+prereq(cse14, third_year_standing).
+prereq(cse15, third_year_standing).
+prereq(cse16, third_year_standing).
+prereq(cse17, third_year_standing).
+prereq(cse18, third_year_standing).
+prereq(cse19, third_year_standing).
+prereq(cse20, third_year_standing).
+prereq(cse21, third_year_standing).
+prereq(cse22, third_year_standing).
+prereq(cse23, third_year_standing).
+prereq(cse24, third_year_standing).
+prereq(cse25, third_year_standing).
 
-% --- ELIGIBILITY LOGIC ---
-
-% Check eligibility by evaluating each prerequisite
+% A student can enroll if ALL prerequisites are in their FinishedList.
 is_eligible(Course, FinishedList) :-
-    findall(P, prereq(Course, P), Prerequisites),
-    check_all_prereqs(Prerequisites, FinishedList).
+    course(Course, _, _),
+    findall(P, prereq(Course, P), Required),
+    (   Required = [] -> true % No prerequisites, so eligible.
+    ;   forall(member(X, Required), (
+            (X == second_year_standing) -> has_second_year_standing(FinishedList)
+            ; (X == third_year_standing) -> has_third_year_standing(FinishedList)
+            ; (X == fourth_year_standing) -> has_fourth_year_standing(FinishedList)
+            ; member(X, FinishedList)
+        ))
+    ).
 
-check_all_prereqs([], _).
-check_all_prereqs([P|Ps], Finished) :-
-    check_single_requirement(P, Finished),
-    check_all_prereqs(Ps, Finished).
+% --- YEAR STANDING RULES ---
+has_second_year_standing(Finished) :-
+    member(cs121, Finished),
+    member(cs122, Finished),
+    member(cs123, Finished).
 
-% Defines what it means to satisfy a specific prerequisite string or atom
-check_single_requirement(second_year_standing, Finished) :- meets_second_year_standing(Finished).
-check_single_requirement(third_year_standing, Finished) :- meets_third_year_standing(Finished).
-check_single_requirement(fourth_year_standing, Finished) :- meets_fourth_year_standing(Finished).
-check_single_requirement(CourseCode, Finished) :- member(CourseCode, Finished).
+has_third_year_standing(Finished) :-
+    has_second_year_standing(Finished),
+    member(cs211, Finished),
+    member(cs212, Finished).
+
+has_fourth_year_standing(Finished) :-
+    has_third_year_standing(Finished),
+    member(cs313, Finished),
+    member(cs312, Finished).
 
 % Helper to find what is missing
 what_is_missing(Course, Finished, Missing) :-
-    findall(P, (prereq(Course, P), \+ check_single_requirement(P, Finished)), Missing).
+    findall(P, (prereq(Course, P), \+ member(P, Finished)), Missing).
+
+% Rule to calculate total units (Needed for Year Standing)
+total_units([], 0).
+total_units([H|T], Total) :-
+    course(H, _, Units),
+    total_units(T, Rest),
+    Total is Units + Rest.
