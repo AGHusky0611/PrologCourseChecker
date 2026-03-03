@@ -1,5 +1,7 @@
+:- use_module(library(apply)).
+
 % --- ELECTIVE SELECTION RULE ---
-% Only 4 electives can be chosen
+% Only 4 electives can be chosen; applies to CSE courses listed below.
 valid_elective_selection(Electives) :-
     length(Electives, 4),
     forall(member(E, Electives), elective(E)).
@@ -7,6 +9,11 @@ valid_elective_selection(Electives) :-
 % Helper predicate to identify electives
 elective(E) :-
     member(E, [cse10, cse11, cse12, cse13, cse14, cse15, cse16, cse17, cse18, cse19, cse20, cse21, cse22, cse23, cse24, cse25, cse26, cse27, cse28, cse29, cse30, cse31, cse32]).
+
+% Count how many electives are already taken
+electives_taken(FinishedList, Count) :-
+    include(elective, FinishedList, Electives),
+    length(Electives, Count).
 
 % --- FIRST YEAR: 1st Semester ---
 % format: course(Code, Name, Units).
@@ -196,6 +203,8 @@ prereq(cse25, third_year_standing).
 % A student can enroll if ALL prerequisites are in their FinishedList.
 is_eligible(Course, FinishedList) :-
     course(Course, _, _),
+    % Enforce max of 4 electives (allow toggling already-taken elective)
+    \+ ( elective(Course), electives_taken(FinishedList, Count), Count >= 4, \+ member(Course, FinishedList) ),
     findall(P, prereq(Course, P), Required),
     (   Required = [] -> true % No prerequisites, so eligible.
     ;   forall(member(X, Required), (
@@ -224,7 +233,11 @@ has_fourth_year_standing(Finished) :-
 
 % Helper to find what is missing
 what_is_missing(Course, Finished, Missing) :-
-    findall(P, (prereq(Course, P), \+ member(P, Finished)), Missing).
+    findall(P, (prereq(Course, P), \+ member(P, Finished)), MissingPrereqs),
+    (   elective(Course), electives_taken(Finished, Count), Count >= 4, \+ member(Course, Finished)
+    ->  append(MissingPrereqs, [max_electives], Missing)
+    ;   Missing = MissingPrereqs
+    ).
 
 % Rule to calculate total units (Needed for Year Standing)
 total_units([], 0).
