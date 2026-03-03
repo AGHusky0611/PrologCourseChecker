@@ -1,3 +1,13 @@
+% --- ELECTIVE SELECTION RULE ---
+% Only 4 electives can be chosen
+valid_elective_selection(Electives) :-
+    length(Electives, 4),
+    forall(member(E, Electives), elective(E)).
+
+% Helper predicate to identify electives
+elective(E) :-
+    member(E, [cse10, cse11, cse12, cse13, cse14, cse15, cse16, cse17, cse18, cse19, cse20, cse21, cse22, cse23, cse24, cse25, cse26, cse27, cse28, cse29, cse30, cse31, cse32]).
+
 % --- FIRST YEAR: 1st Semester ---
 % format: course(Code, Name, Units).
 course(cs111, 'Introduction to Computing', 3).
@@ -71,6 +81,24 @@ course(cse22, 'Advanced Applications Development', 3).
 course(cse23, 'Computer Graphics', 3).
 course(cse24, 'Game Design and Development', 3).
 course(cse25, 'UX Design and Concepts', 3).
+
+% --- GENERAL SUBJECTS (No Prerequisites) ---
+course(gmath, 'Mathematics in the Modern World', 3).
+course(gart, 'Art Appreciation', 3).
+course(ghist, 'Readings in Philippine History', 3).
+course(gself, 'Understanding the Self', 3).
+course(gpfcom, 'Purposive Communication', 3).
+course(genvi, 'Environmental Science', 3).
+course(nstp_cwts1, 'Foundations of Service', 3).
+course(nstp_cwts2, 'The Contemporary World', 3).
+course(cfe101, 'God’s Journey with His People', 3).
+course(cfe102, 'Christian Morality in Our Times', 3).
+course(cfe103, 'CICM in Action: Justice, Peace, and Integrity of Creation, Indigenous Peoples, and Interreligious Dialogue', 3).
+course(cfe104, 'CICM in Action: Environmental Planning and Management and Disaster Risk Reduction Management', 3).
+course(cfe105a, 'Embracing the CICM Mission', 1.5).
+course(cfe105b, 'Embracing the CICM Mission', 1.5).
+course(fit_hw, 'Physical Activity Towards Health and Fitness (Health and Wellness)', 2).
+course(fit_oa, 'Physical Activity Towards Health and Fitness (Combative Sports)', 2).
 
 % --- PREREQUISITE RULES ---
 % =====================================================================
@@ -204,3 +232,6 @@ total_units([H|T], Total) :-
     course(H, _, Units),
     total_units(T, Rest),
     Total is Units + Rest.
+% Suppress discontiguous warning for course/3
+:- discontiguous course/3.
+
